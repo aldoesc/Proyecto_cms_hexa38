@@ -1,0 +1,11 @@
+# Ver logs en tiempo real
+docker compose logs -f
+
+# Ver estado del contenedor
+docker compose ps
+
+# Detener el proyecto
+docker compose down
+
+# Reiniciar el proyecto
+docker compose restart

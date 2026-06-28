@@ -1,0 +1,13 @@
+# Dependencias para COMPILAR el reproductor del tótem (ReproductorTotem.exe)
+# Instalar con:  pip install -r requirements-reproductor.txt
+# Luego compilar: python -m PyInstaller ReproductorTotem.spec --noconfirm --clean
+#
+# IMPORTANTE: python-vlc es imprescindible. Sin él, el .exe se empaqueta sin el
+# módulo VLC y falla con "module 'vlc' has no attribute 'Instance'".
+# La carpeta vlc_portable/ (binarios de VLC) se empaqueta como 'vlcbin' dentro
+# del .exe (ver ReproductorTotem.spec) — NO debe llamarse 'vlc' porque colisiona
+# con el módulo python-vlc.
+
+requests
+python-vlc
+pyinstaller

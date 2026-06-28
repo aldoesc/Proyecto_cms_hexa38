@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Hexa38 CMS - Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Estado de los Equipos</h2>
+    <span class="text-muted" id="ultimo-refresh"></span>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Identificador</th>
+                    <th>Ultimo Latido</th>
+                    <th>Almacenamiento (C:\)</th>
+                    <th>Estado</th>
+                    <th>Acciones Remotas</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-totems">
+                {% for totem in totems %}
+                <tr data-totem-id="{{ totem.id }}">
+                    <td>
+                        <span class="fw-bold fs-5 text-primary">#{{ totem.id }}</span><br>
+                        <span class="badge bg-secondary">{{ totem.nombre }}</span>
+                    </td>
+                    <td class="celda-latido">{{ totem.ultimo_latido_formato or totem.ultimo_latido or 'Sin conexion' }}</td>
+                    <td class="celda-disco">
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar {% if totem.almacenamiento > 80 %}bg-danger{% else %}bg-success{% endif %}"
+                                 role="progressbar"
+                                 style="width: {{ totem.almacenamiento }}%;">
+                                {{ totem.almacenamiento }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td class="celda-estado">
+                        {% if totem.online %}
+                            <span class="badge bg-success">Online</span>
+                        {% else %}
+                            <span class="badge bg-danger">Offline</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form action="/apagar_totem/{{ totem.id }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Estas seguro de que deseas APAGAR fisicamente este equipo?');">
+                                Apagar Equipo
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-5">
+                        <h4>No hay equipos registrados</h4>
+                        <p>Ve a la seccion "Equipos" para registrar tu primer totem.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function actualizarEstado() {
+    fetch('/api/estado_totems')
+        .then(r => r.json())
+        .then(totems => {
+            totems.forEach(t => {
+                var fila = document.querySelector('[data-totem-id="' + t.id + '"]');
+                if (!fila) return;
+
+                fila.querySelector('.celda-latido').textContent = t.ultimo_latido;
+
+                var barra = fila.querySelector('.progress-bar');
+                barra.style.width = t.almacenamiento + '%';
+                barra.textContent = t.almacenamiento + '%';
+                barra.className = 'progress-bar ' + (t.almacenamiento > 80 ? 'bg-danger' : 'bg-success');
+
+                var estado = fila.querySelector('.celda-estado');
+                estado.innerHTML = t.online
+                    ? '<span class="badge bg-success">Online</span>'
+                    : '<span class="badge bg-danger">Offline</span>';
+            });
+
+            var ahora = new Date().toLocaleTimeString();
+            document.getElementById('ultimo-refresh').textContent = 'Actualizado: ' + ahora;
+        })
+        .catch(function() {});
+}
+
+setInterval(actualizarEstado, 10000);
+</script>
+{% endblock %}

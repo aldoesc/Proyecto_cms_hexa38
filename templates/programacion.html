@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Hexa38 CMS - Programación{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-primary">
+            <div class="card-header bg-primary text-white fw-bold">
+                Nueva Programación 📅
+            </div>
+            <div class="card-body">
+                <form action="/programacion" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label class="form-label">Seleccionar Tótem</label>
+                        <select class="form-select" name="totem_id" required>
+                            <option value="" disabled selected>Elige un equipo...</option>
+                            {% for totem in totems %}
+                                <option value="{{ totem.id }}">{{ totem.nombre }} (ID: {{ totem.id }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Contenido a reproducir</label>
+                        <select class="form-select" name="contenido_id" required>
+                            <option value="" disabled selected>Elige un video/imagen...</option>
+                            {% for contenido in contenidos %}
+                                <option value="{{ contenido.id }}">{{ contenido.nombre_archivo }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Hora Inicio</label>
+                            <input type="time" class="form-control" name="hora_inicio" required>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Hora Fin</label>
+                            <input type="time" class="form-control" name="hora_fin" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Asignar Horario</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white fw-bold">
+                Horarios Activos
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Equipo</th>
+                            <th>Archivo</th>
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prog in programaciones %}
+                        <tr>
+                            <td class="fw-bold text-primary">{{ prog.nombre_totem }} <br><small class="text-muted">#{{ prog.totem_id }}</small></td>
+                            <td>{{ prog.nombre_archivo }}</td>
+                            <td><span class="badge bg-secondary">{{ prog.hora_inicio }}</span></td>
+                            <td><span class="badge bg-secondary">{{ prog.hora_fin }}</span></td>
+                            <td>
+                                <form action="/eliminar_programacion/{{ prog.id }}" method="POST" style="display:inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('¿Eliminar este horario?');">
+                                        🗑️ Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No hay contenido programado actualmente.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

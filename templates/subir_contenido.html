@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Hexa38 CMS - Subir Contenido{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Añadir Nuevo Contenido</h4>
+            </div>
+            <div class="card-body p-4">
+                <form id="form-subida" action="/subir_contenido" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" id="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-4">
+                        <label for="archivo" class="form-label fw-bold">Selecciona el archivo (Video o Imagen)</label>
+                        <input class="form-control form-control-lg" type="file" id="archivo" name="archivo" required accept="video/mp4, image/jpeg, image/png">
+                        <div class="form-text">Formatos permitidos: .mp4, .jpg, .png. Tamaño máximo: dependiente del servidor.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="tipo" class="form-label fw-bold">Tipo de Contenido</label>
+                        <select class="form-select" id="tipo" name="tipo">
+                            <option value="video" selected>Video</option>
+                            <option value="imagen">Imagen estática</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4" id="contenedor-duracion" style="display: none;">
+                        <label for="duracion" class="form-label fw-bold">Duración en pantalla (segundos)</label>
+                        <input type="number" class="form-control" id="duracion" name="duracion" value="10" min="1" max="3600">
+                        <div class="form-text">Cuánto tiempo se mostrará la imagen antes de pasar al siguiente contenido. Solo aplica a imágenes (los videos duran lo que dura el video).</div>
+                    </div>
+
+                    <div id="contenedor-progreso" class="mb-4" style="display: none;">
+                        <label class="form-label fw-bold text-primary">Subiendo archivo, por favor espera...</label>
+                        <div class="progress" style="height: 25px;">
+                            <div id="barra-progreso" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                        </div>
+                    </div>
+
+                    <div id="mensaje-error" class="alert alert-danger" style="display: none;"></div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" id="btn-subir" class="btn btn-success btn-lg">
+                            Subir al Servidor 📤
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Mostrar el campo de duración solo cuando el contenido es una imagen
+    var selectTipo = document.getElementById('tipo');
+    var contenedorDuracion = document.getElementById('contenedor-duracion');
+    function actualizarVisibilidadDuracion() {
+        contenedorDuracion.style.display = selectTipo.value === 'imagen' ? 'block' : 'none';
+    }
+    selectTipo.addEventListener('change', actualizarVisibilidadDuracion);
+    actualizarVisibilidadDuracion();
+
+    document.getElementById('form-subida').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        var form = this;
+        var formData = new FormData(form);
+        var btnSubir = document.getElementById('btn-subir');
+        var contenedorProgreso = document.getElementById('contenedor-progreso');
+        var barraProgreso = document.getElementById('barra-progreso');
+        var mensajeError = document.getElementById('mensaje-error');
+
+        // Ocultar mensaje de error anterior
+        mensajeError.style.display = 'none';
+        mensajeError.innerHTML = '';
+
+        btnSubir.disabled = true;
+        btnSubir.innerHTML = '⏳ Subiendo...';
+        contenedorProgreso.style.display = 'block';
+        barraProgreso.style.width = '0%';
+        barraProgreso.innerHTML = '0%';
+        barraProgreso.classList.remove('bg-warning');
+        barraProgreso.classList.add('bg-success');
+
+        var xhr = new XMLHttpRequest();
+
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                var porcentaje = Math.round((e.loaded / e.total) * 100);
+                barraProgreso.style.width = porcentaje + '%';
+                barraProgreso.innerHTML = porcentaje + '%';
+                if (porcentaje === 100) {
+                    barraProgreso.innerHTML = 'Procesando archivo...';
+                    barraProgreso.classList.remove('bg-success');
+                    barraProgreso.classList.add('bg-warning');
+                }
+            }
+        });
+
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200) {
+                // Éxito: redirigir a la biblioteca
+                window.location.href = '/archivos';
+            } else {
+                // Error HTTP (400, 500, etc.)
+                var respuesta;
+                try {
+                    respuesta = JSON.parse(xhr.responseText);
+                    mensajeError.innerHTML = respuesta.error || 'Error desconocido del servidor.';
+                } catch (e) {
+                    mensajeError.innerHTML = 'Error inesperado. Intenta de nuevo.';
+                }
+                mensajeError.style.display = 'block';
+                btnSubir.disabled = false;
+                btnSubir.innerHTML = 'Subir al Servidor 📤';
+                contenedorProgreso.style.display = 'none';
+            }
+        });
+
+        xhr.addEventListener('error', function() {
+            mensajeError.innerHTML = 'Ocurrió un error de red. Revisa tu conexión e inténtalo de nuevo.';
+            mensajeError.style.display = 'block';
+            btnSubir.disabled = false;
+            btnSubir.innerHTML = 'Subir al Servidor 📤';
+            contenedorProgreso.style.display = 'none';
+        });
+
+        xhr.open('POST', '/subir_contenido', true);
+        xhr.send(formData);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,31 @@
+# Editor
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+
+# Build
+dist/
+build/
+installer_output/
+
+# VLC portable (binarios de terceros ~185MB) - descargar por separado
+vlc_portable/
+
+# Contenido multimedia de las tiendas (videos/imagenes) - no versionar
+media/
+descargas_totem/
+
+# Base de datos local
+*.db
+
+# Variables de entorno
+.env
+
+# Sistema
+.DS_Store
+Thumbs.db

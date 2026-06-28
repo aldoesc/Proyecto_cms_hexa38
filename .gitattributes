@@ -1,0 +1,17 @@
+# Tratar estos archivos como binarios: Git NO debe convertir saltos de línea
+# (de lo contrario se corrompen al clonar en otra máquina).
+*.pdf  binary
+*.exe  binary
+*.dll  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.mp4  binary
+*.ico  binary
+*.so   binary
+
+# Código fuente: normalizar a LF dentro del repo
+*.py   text eol=lf
+*.html text eol=lf
+*.yml  text eol=lf
+*.md   text eol=lf

@@ -1,0 +1,26 @@
+services:
+  hexa38_cms_server:
+    build: .
+    container_name: hexa38_cms_server
+    ports:
+      - "8080:5000"
+    restart: unless-stopped
+    environment:
+      # IMPORTANTE: cambia estos dos valores antes de producción.
+      # Genera uno con:  python -c "import secrets; print(secrets.token_hex(32))"
+      - SECRET_KEY=hexa38_secret_key_change_in_production
+      - DATA_DIR=/app/data
+      - API_KEY=hexa38-totem-key-change-me
+    volumes:
+      - cms_media:/app/media
+      - cms_db:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  cms_media:
+  cms_db:

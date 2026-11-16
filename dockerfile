@@ -2,6 +2,10 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
+# tzdata: para que TZ (ver docker-compose.yml) dé la hora local en panel y logs
+RUN apt-get update && apt-get install -y --no-install-recommends tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copiar requirements e instalar dependencias
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -16,7 +20,9 @@ RUN mkdir -p media data
 EXPOSE 5000
 
 # Ejecutar con Gunicorn (recomendado para producción)
-# --timeout 300: permite servir videos grandes por redes lentas sin que el worker
-#   muera a los 30s (default) y corte la descarga del tótem.
-# --workers 3: una descarga lenta no bloquea los latidos de otros tótems/dashboard.
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "--timeout", "300", "--workers", "3", "servidor:app"]
+# --worker-class gthread --threads 8: cada descarga ocupa un hilo, no un worker
+#   entero; varias descargas lentas a la vez no bloquean latidos ni el panel, y
+#   una descarga larga ya no muere por el timeout del worker.
+# --preload: la migración de la base corre una sola vez, no una por worker.
+# --access-logfile -: cada petición (incluidos los 401) queda en `docker compose logs`.
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "--preload", "--worker-class", "gthread", "--workers", "2", "--threads", "8", "--timeout", "120", "--access-logfile", "-", "servidor:app"]

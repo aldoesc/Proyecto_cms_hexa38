@@ -48,7 +48,7 @@
                                 </button>
                                 <form action="/eliminar_totem/{{ totem.id }}" method="POST" style="display:inline;">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Seguro que deseas borrar este equipo?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Eliminar el equipo #{{ totem.id }}?\n\nSe borrarán también sus {{ totem.n_horarios }} horario(s) programados y no se pueden recuperar.\nSi solo vas a reinstalarlo o cambió de IP, usa Editar.');">
                                         🗑️ Eliminar
                                     </button>
                                 </form>

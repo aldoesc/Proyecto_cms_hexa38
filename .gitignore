@@ -29,3 +29,8 @@ descargas_totem/
 # Sistema
 .DS_Store
 Thumbs.db
+# Logs y estado local del reproductor
+*.log
+horario_cache.json
+huerfanos.json
+config_totem.json

@@ -43,6 +43,10 @@
                             <span class="badge bg-warning text-dark">Comando</span>
                         {% elif log.evento == 'subida' %}
                             <span class="badge bg-info text-dark">Subida</span>
+                        {% elif log.evento == 'reconexion' %}
+                            <span class="badge bg-warning text-dark">Reconexion</span>
+                        {% elif log.evento == 'eliminacion' %}
+                            <span class="badge bg-danger">Eliminacion</span>
                         {% elif log.evento == 'registro' %}
                             <span class="badge bg-primary">Registro</span>
                         {% else %}

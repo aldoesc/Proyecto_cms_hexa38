@@ -16,6 +16,7 @@
                     <th>Ultimo Latido</th>
                     <th>Almacenamiento (C:\)</th>
                     <th>Estado</th>
+                    <th>Contenido</th>
                     <th>Acciones Remotas</th>
                 </tr>
             </thead>
@@ -25,8 +26,9 @@
                     <td>
                         <span class="fw-bold fs-5 text-primary">#{{ totem.id }}</span><br>
                         <span class="badge bg-secondary">{{ totem.nombre }}</span>
+                        <br><small class="text-muted celda-version">{% if totem.version %}v{{ totem.version }}{% endif %}</small>
                     </td>
-                    <td class="celda-latido">{{ totem.ultimo_latido_formato or totem.ultimo_latido or 'Sin conexion' }}</td>
+                    <td class="celda-latido">{{ totem.ultimo_latido }}</td>
                     <td class="celda-disco">
                         <div class="progress" style="height: 20px;">
                             <div class="progress-bar {% if totem.almacenamiento > 80 %}bg-danger{% else %}bg-success{% endif %}"
@@ -43,6 +45,10 @@
                             <span class="badge bg-danger">Offline</span>
                         {% endif %}
                     </td>
+                    <td style="max-width: 320px;">
+                        <div class="small fw-bold text-truncate celda-reproduciendo" title="{{ totem.reproduciendo }}">{{ totem.reproduciendo or '—' }}</div>
+                        <div class="small text-muted celda-sync">{{ totem.sync }}</div>
+                    </td>
                     <td>
                         <form action="/apagar_totem/{{ totem.id }}" method="POST" style="display:inline;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -54,7 +60,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5" class="text-center text-muted py-5">
+                    <td colspan="6" class="text-center text-muted py-5">
                         <h4>No hay equipos registrados</h4>
                         <p>Ve a la seccion "Equipos" para registrar tu primer totem.</p>
                     </td>
@@ -85,6 +91,14 @@ function actualizarEstado() {
                 estado.innerHTML = t.online
                     ? '<span class="badge bg-success">Online</span>'
                     : '<span class="badge bg-danger">Offline</span>';
+
+                var rep = fila.querySelector('.celda-reproduciendo');
+                rep.textContent = t.reproduciendo || '—';
+                rep.title = t.reproduciendo;
+                // Si está offline, lo último informado ya no es fiable
+                fila.querySelector('.celda-sync').textContent =
+                    t.online ? t.sync : (t.sync ? 'Último estado conocido: ' + t.sync : '');
+                fila.querySelector('.celda-version').textContent = t.version ? 'v' + t.version : '';
             });
 
             var ahora = new Date().toLocaleTimeString();
